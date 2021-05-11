@@ -51,12 +51,13 @@ function createMarker({name, address, lat, lng, kind_food, photo}) {
 }
 
 function geolocate() {
-  if ("geolocation" in navigator) {
-    navigator.geolocation.getCurrentPosition(
-      ({coords: {latitude: lat, longitude: lng}} = position) => map.setView([lat, lng], 9),
-      () => console.log("Unable to retrieve your location")
-    );
-  }
+  //if (!"geolocation" in navigator) return
+  if(!navigator.geolocation) return
+
+  navigator.geolocation.getCurrentPosition(
+    ({coords: {latitude: lat, longitude: lng}} = position) => map.setView([lat, lng], 9),
+    () => console.log("Unable to retrieve your location")
+  );
 }
 
 function render_to_map(data_markers, filter) {
@@ -71,23 +72,20 @@ function render_to_map(data_markers, filter) {
 }
 
 async function onMapLoad() {
+  geolocate();
+  
   data_markers = await getRestaurants();
-
+  
   const selectValues = new Set(
     data_markers
-      .map(restaurant => restaurant.kind_food)
-      .filter(label => label !== "")
-      .sort()
-  );
-  populateKindFoodSelect(selectValues);
-
-  geolocate();
-  render_to_map(data_markers, "Todos");
+    .map(restaurant => restaurant.kind_food)
+    .filter(label => label !== "")
+    .sort()
+    );
+    populateKindFoodSelect(selectValues);
 }
 
 function fitBounds() {
-  //if (!restosFiltrados) return;
-
   const restosLat = restosFiltrados.map(({lat} = resto) => lat);
   const restosLng = restosFiltrados.map(({lng} = resto) => lng);
   const southWest = [Math.min(...restosLat), Math.max(...restosLng)];
