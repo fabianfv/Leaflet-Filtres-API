@@ -11,7 +11,7 @@ const kindFoodList = document.querySelector("#kind_food_selector");
 
 async function getRestaurants() {
   try {
-    const response = await fetch("http://localhost/Leaflet+Filtres+API/api/apiRestaurants.php");
+    const response = await fetch("http://localhost/Leaflet-Filtres-API/api/apiRestaurants.php");
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -51,7 +51,6 @@ function createMarker({name, address, lat, lng, kind_food, photo}) {
 }
 
 function geolocate() {
-  //if (!"geolocation" in navigator) return
   if(!navigator.geolocation) return
 
   navigator.geolocation.getCurrentPosition(
@@ -64,7 +63,11 @@ function render_to_map(data_markers, filter) {
   markers.clearLayers();
 
   restosFiltrados =
-    filter === "Todos" ? data_markers : data_markers.filter(({kind_food} = restaurant) => kind_food === filter);
+    filter === "Todos"
+      ? data_markers
+      : data_markers.filter(
+        ({ kind_food } = restaurant) => kind_food === filter)
+    ;
 
   restosFiltrados.forEach(restaurant => markers.addLayer(createMarker(restaurant)));
 
