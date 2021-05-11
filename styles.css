@@ -16,3 +16,38 @@ body {
 }
 
 
+.leaflet-popup-content-wrapper,
+.leaflet-popup-content {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.leaflet-popup-close-button {
+  display: none;
+}
+
+.card-photo {
+  width:100%;
+  margin-bottom:0.5em;
+  border-radius: 12px 12px 0 0;
+}
+
+.card-data {
+  padding: 1em;
+}
+
+.leaflet-popup-content p {
+  margin-top: 0.25em;
+  margin-bottom: 0.25em;
+}
+
+.resto-name {
+  font-weight: bold;
+  font-size: 1.5em;
+}
+
+.resto-kind-food {
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
