@@ -1,9 +1,7 @@
 var map = L.map("mapid").on("load", onMapLoad).setView([41.4, 2.206], 9);
-//map.locate({setView: true, maxZoom: 17});
 
 var tiles = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {}).addTo(map);
 
-//en el clusters almaceno todos los markers
 var markers = L.markerClusterGroup();
 var data_markers = [];
 var marker;
@@ -32,15 +30,11 @@ function createOptionElement(kind_food) {
   return option;
 }
 
-function populateKindFoodSelect(values) {
+function populateKindFoodSelect(labels) {
   kindFoodList.appendChild(createOptionElement("Ninguno"));
   kindFoodList.appendChild(createOptionElement("Todos"));
-  values.forEach(kind_food => kindFoodList.appendChild(createOptionElement(kind_food)));
+  labels.forEach(kind_food => kindFoodList.appendChild(createOptionElement(kind_food)));
 }
-
-kindFoodList.addEventListener("change", e => {
-  render_to_map(data_markers, e.target.value);
-});
 
 function createMarker({name, address, lat, lng, kind_food, photo}) {
   const marker = L.marker([lat, lng]);
@@ -56,29 +50,29 @@ function createMarker({name, address, lat, lng, kind_food, photo}) {
   return marker;
 }
 
+function geolocate() {
+  if ("geolocation" in navigator) {
+    navigator.geolocation.getCurrentPosition(
+      ({coords: {latitude: lat, longitude: lng}} = position) => map.setView([lat, lng], 9),
+      () => console.log("Unable to retrieve your location")
+    );
+  }
+}
+
 function render_to_map(data_markers, filter) {
-  // FASE 3.2
-  //1) Limpio todos los marcadores
-  markers.clearLayers()
-  // 2) Realizo un bucle para decidir que marcadores cumplen el filtro, y los agregamos al mapa
-    restosFiltrados =
-      filter === "Todos"
-        ? data_markers
-        : data_markers.filter((
-          { kind_food } = restaurant) => kind_food === filter
-        );
+  markers.clearLayers();
 
-    restosFiltrados.forEach(restaurant => markers.addLayer(createMarker(restaurant)));
+  restosFiltrados =
+    filter === "Todos" ? data_markers : data_markers.filter(({kind_food} = restaurant) => kind_food === filter);
 
-    map.addLayer(markers);
+  restosFiltrados.forEach(restaurant => markers.addLayer(createMarker(restaurant)));
+
+  map.addLayer(markers);
 }
 
 async function onMapLoad() {
-  // FASE 3.1
-  // 1) Relleno el data_markers con una petición a la api
   data_markers = await getRestaurants();
 
-  // 2) Añado de forma dinámica en el select los posibles tipos de restaurantes
   const selectValues = new Set(
     data_markers
       .map(restaurant => restaurant.kind_food)
@@ -87,6 +81,23 @@ async function onMapLoad() {
   );
   populateKindFoodSelect(selectValues);
 
-  //	3) Llamo a la función para --> render_to_map(data_markers, 'all'); <-- para mostrar restaurantes en el mapa
+  geolocate();
   render_to_map(data_markers, "Todos");
 }
+
+function fitBounds() {
+  //if (!restosFiltrados) return;
+
+  const restosLat = restosFiltrados.map(({lat} = resto) => lat);
+  const restosLng = restosFiltrados.map(({lng} = resto) => lng);
+  const southWest = [Math.min(...restosLat), Math.max(...restosLng)];
+  const northEast = [Math.max(...restosLat), Math.min(...restosLng)];
+  const bounds = new L.LatLngBounds(southWest, northEast);
+
+  map.fitBounds(bounds, {padding: [50, 50]});
+}
+
+kindFoodList.addEventListener("change", e => {
+  render_to_map(data_markers, e.target.value);
+  fitBounds();
+});
