@@ -11,7 +11,7 @@ const kindFoodList = document.querySelector("#kind_food_selector");
 
 async function getRestaurants() {
   try {
-    const response = await fetch("http://localhost/Leaflet-Filtres-API/api/apiRestaurants.php");
+    const response = await fetch("api/apiRestaurants.php");
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
